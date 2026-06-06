@@ -14,7 +14,9 @@ form.addEventListener('submit', function(e) {
     id: Date.now(),
     title: document.getElementById('task-title').value,
     type: document.getElementById('task-type').value,
-    date: document.getElementById('task-date').value
+    date: document.getElementById('task-date').value,
+    completed: false,
+    createdAt: new Date().toISOString()
   };
 
   // Guardar en el almacenamiento del celular
@@ -39,20 +41,47 @@ function displayTasks() {
   taskList.innerHTML = '';
   let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
 
-  // Ordenar tareas: las facturas primero por importancia
-  tasks.sort((a, b) => (a.type === 'factura' ? -1 : 1));
+  if (tasks.length === 0) {
+    taskList.innerHTML = '<li style="text-align: center; color: #999; padding: 20px;">✨ ¡No tienes tareas! ✨</li>';
+    return;
+  }
+
+  // Ordenar tareas: las facturas primero por importancia, luego por fecha
+  tasks.sort((a, b) => {
+    if (a.type !== b.type) {
+      return a.type === 'factura' ? -1 : 1;
+    }
+    return new Date(a.date) - new Date(b.date);
+  });
 
   tasks.forEach(task => {
     const li = document.createElement('li');
-    li.className = `task-item ${task.type}`;
+    li.className = `task-item ${task.type} ${task.completed ? 'completed' : ''}`;
     
     // Traducir el tipo para mostrarlo bonito
-    let typeLabel = task.type === 'factura' ? '💵 Factura' : task.type === 'llamada' ? '📞 Llamada' : '🏢 Trámite';
+    let typeLabel = task.type === 'factura' ? '💵 Factura' : 
+                    task.type === 'llamada' ? '📞 Llamada' : 
+                    '🏢 Trámite';
+
+    // Calcular días restantes
+    const today = new Date();
+    const taskDate = new Date(task.date);
+    const daysLeft = Math.ceil((taskDate - today) / (1000 * 60 * 60 * 24));
+    let daysInfo = '';
+    
+    if (daysLeft < 0) {
+      daysInfo = `⚠️ ${Math.abs(daysLeft)} días atrasado`;
+    } else if (daysLeft === 0) {
+      daysInfo = '🔴 ¡Hoy vence!';
+    } else {
+      daysInfo = `📅 ${daysLeft} días restantes`;
+    }
 
     li.innerHTML = `
       <div class="task-info">
         <p class="title">${task.title}</p>
-        <p class="date">📆 ${typeLabel} - Vence: ${task.date}</p>
+        <p class="date">${typeLabel} - Vence: ${task.date}</p>
+        <p class="days-left">${daysInfo}</p>
       </div>
       <button class="btn-complete" onclick="deleteTask(${task.id})">✔ Hecho</button>
     `;
@@ -66,4 +95,12 @@ function deleteTask(id) {
   tasks = tasks.filter(task => task.id !== id);
   localStorage.setItem('myTasks', JSON.stringify(tasks));
   displayTasks();
+}
+
+// Función para limpiar todas las tareas (opcional)
+function clearAllTasks() {
+  if (confirm('¿Estás seguro de que quieres borrar todas las tareas?')) {
+    localStorage.removeItem('myTasks');
+    displayTasks();
+  }
 }

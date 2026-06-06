@@ -1,26 +1,38 @@
-onal</h1>
-<link rel="stylesheet" href="style.css">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Asistente Personal</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
   <div class="app-container">
-  <h1>📋 Mi Asistente Pers
-  <!-- Formulario para nueva tarea -->
-  <form id="task-form">
-    <input type="text" id="task-title" placeholder="¿Qué tienes que hacer?" required>
+    <h1>📋 Mi Asistente Personal</h1>
     
-    <select id="task-type">
-      <option value="factura">💵 Pago de Factura</option>
-      <option value="llamada">📞 Llamar a Contacto</option>
-      <option value="tramite">🏢 Trámite de Oficina</option>
-    </select>
-    
-    <label for="task-date">Vence el:</label>
-    <input type="date" id="task-date" required>
-    
-    <button type="submit">Agregar Tarea</button>
-  </form>
+    <!-- Formulario para nueva tarea -->
+    <form id="task-form">
+      <input type="text" id="task-title" placeholder="¿Qué tienes que hacer?" required>
+      
+      <select id="task-type">
+        <option value="factura">💵 Pago de Factura</option>
+        <option value="llamada">📞 Llamar a Contacto</option>
+        <option value="tramite">🏢 Trámite de Oficina</option>
+      </select>
+      
+      <label for="task-date">Vence el:</label>
+      <input type="date" id="task-date" required>
+      
+      <button type="submit">Agregar Tarea</button>
+    </form>
 
-  <!-- Lista de tareas -->
-  <h2>Mis Tareas Pendientes</h2>
-  <ul id="task-list">
-    <!-- Aquí el código JavaScript meterá las tareas -->
-  </ul>
-</div>
+    <!-- Lista de tareas -->
+    <h2>Mis Tareas Pendientes</h2>
+    <ul id="task-list">
+      <!-- Aquí el código JavaScript meterá las tareas -->
+    </ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
