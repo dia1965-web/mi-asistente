@@ -8,7 +8,38 @@
 </head>
 <body>
   <div class="app-container">
-    <h1>📋 Mi Asistente Personal</h1>
+    <div class="header">
+      <h1>📋 Mi Asistente Personal</h1>
+      <div class="header-controls">
+        <button id="theme-toggle" class="btn-theme" title="Cambiar tema">🌙</button>
+        <button id="stats-btn" class="btn-icon" title="Ver estadísticas">📊</button>
+      </div>
+    </div>
+    
+    <!-- Panel de Estadísticas -->
+    <div id="stats-panel" class="stats-panel hidden">
+      <h3>📈 Estadísticas</h3>
+      <div class="stats-grid">
+        <div class="stat">
+          <span class="stat-value" id="total-tasks">0</span>
+          <span class="stat-label">Total de Tareas</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="completed-tasks">0</span>
+          <span class="stat-label">Completadas</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="pending-tasks">0</span>
+          <span class="stat-label">Pendientes</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="overdue-tasks">0</span>
+          <span class="stat-label">Atrasadas</span>
+        </div>
+      </div>
+      <button id="export-btn" class="btn-export">📥 Exportar a CSV</button>
+      <button id="close-stats" class="btn-close">✕</button>
+    </div>
     
     <!-- Formulario para nueva tarea -->
     <form id="task-form">
@@ -26,11 +57,24 @@
       <button type="submit">Agregar Tarea</button>
     </form>
 
+    <!-- Buscador -->
+    <div class="search-container">
+      <input type="text" id="search-input" placeholder="🔍 Buscar tareas...">
+      <select id="filter-type">
+        <option value="">Todas las tareas</option>
+        <option value="factura">💵 Facturas</option>
+        <option value="llamada">📞 Llamadas</option>
+        <option value="tramite">🏢 Trámites</option>
+      </select>
+    </div>
+
     <!-- Lista de tareas -->
     <h2>Mis Tareas Pendientes</h2>
     <ul id="task-list">
       <!-- Aquí el código JavaScript meterá las tareas -->
     </ul>
+    
+    <button id="clear-all-btn" class="btn-danger hidden">🗑️ Limpiar todo</button>
   </div>
 
   <script src="script.js"></script>
