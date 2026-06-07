@@ -325,3 +325,96 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+// 1. Validar que el teléfono/navegador soporte el reconocimiento de voz
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (SpeechRecognition) {
+  const recognition = new SpeechRecognition();
+  
+  // Configuración del reconocimiento
+  recognition.lang = 'es-ES'; // Idioma español
+  recognition.continuous = false; // Se detiene automáticamente cuando dejas de hablar
+  recognition.interimResults = false; // Solo muestra el resultado final procesado
+
+  // Obtenemos los elementos del HTML que modificamos antes
+  const botonVoz = document.getElementById('btn-voz');
+  const textoEscuchado = document.getElementById('texto-escuchado');
+
+  // 2. Evento al tocar el botón del micrófono
+  botonVoz.addEventListener('click', () => {
+    try {
+      recognition.start();
+      textoEscuchado.innerText = "Escuchando... habla ahora.";
+      // Le damos un efecto visual de brillo verde mientras escucha
+      botonVoz.style.boxShadow = "0 0 25px rgba(46, 204, 113, 0.8)";
+      botonVoz.style.background = "linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)";
+    } catch (error) {
+      console.log("El reconocimiento ya estaba activo.");
+    }
+  });
+
+  // 3. Qué hace la app cuando dejas de hablar y entiende el texto
+  recognition.onresult = (event) => {
+    // Convertimos lo que dijiste a minúsculas para que sea fácil de leer por el código
+    const comando = event.results[0][0].transcript.toLowerCase();
+    textoEscuchado.innerText = `Entendido: "${comando}"`;
+    
+    // Devolvemos el botón a su color azul original
+    restaurarBoton(botonVoz);
+
+    // Enviamos el texto a nuestro "cerebro" de comandos
+    procesarComando(comando);
+  };
+
+  // En caso de error o si no detecta voz
+  recognition.onerror = (event) => {
+    textoEscuchado.innerText = "No logré escucharte bien. ¡Intenta de nuevo!";
+    restaurarBoton(botonVoz);
+  };
+
+  recognition.onend = () => {
+    restaurarBoton(botonVoz);
+  };
+
+} else {
+  alert("Lo siento, este navegador o dispositivo no es compatible con el control por voz.");
+}
+
+// Función auxiliar para regresar el botón al diseño azul original
+function restaurarBoton(boton) {
+  boton.style.boxShadow = "0 8px 15px rgba(0, 180, 219, 0.3)";
+  boton.style.background = "linear-gradient(135deg, #00b4db 0%, #0083b0 100%)";
+}
+
+// 4. El "Cerebro" que decide qué hacer según tus palabras
+function procesarComando(orden) {
+  
+  // COMANDO PARA LLAMAR
+  if (orden.includes("llamar a")) {
+    const contacto = orden.replace("llamar a", "").trim();
+    alert(`Asistente: Abriendo el marcador para llamar a "${contacto}"`);
+    
+    /* 
+      TIP: Si en el futuro tienes un número guardado, puedes hacer que marque directo usando:
+      window.location.href = "tel:+54911xxxxxxx";
+    */
+  } 
+  
+  // COMANDO PARA FACTURAS
+  else if (orden.includes("pagar") || orden.includes("factura") || orden.includes("recibo")) {
+    alert("Asistente: Abriendo tu lista de facturas y servicios pendientes.");
+    // Aquí puedes llamar a la función que ya tengas para mostrar tus cuentas
+  } 
+  
+  // COMANDO PARA TRÁMITES O CREAR TAREAS GENERALES
+  else if (orden.includes("recordar") || orden.includes("tarea") || orden.includes("trámite")) {
+    const nuevaTarea = orden.replace("recordar", "").replace("tarea", "").trim();
+    alert(`Asistente: Añadiendo a tus trámites de oficina: "${nuevaTarea}"`);
+    // Aquí puedes conectar tu código antiguo que insertaba tareas en la lista
+  } 
+  
+  // SI NO ENTIENDE LA ORDEN
+  else {
+    alert(`Asistente: Registré la orden "${orden}", pero aún no sé qué acción ejecutar para ella.`);
+  }
+}
