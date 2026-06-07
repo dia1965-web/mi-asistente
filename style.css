@@ -1,103 +1,237 @@
-/* --- ESTILOS MODERNOS PARA MI ASISTENTE --- */
+/* =======================================================
+   REDISEÑO UNIFICADO DE "MI ASISTENTE PERSONAL"
+   ======================================================= */
 
-/* Asegura que los márgenes sean limpios en el celular */
+/* 1. Base y Fondo Moderno */
 body {
-  background-color: #f0f4f8;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f7f6; /* Gris muy claro y limpio */
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+/* 2. Contenedor Principal (Simula una App) */
+.app-container {
+  max-width: 450px;
+  width: 90%;
+  margin: 20px auto;
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  overflow: hidden; /* Asegura bordes redondeados */
+  padding-bottom: 20px;
+}
+
+/* 3. Header Original Unificado */
+.header {
+  background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+  color: white;
   padding: 20px;
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 18px;
+  margin: 0;
+  font-weight: 600;
+}
+
+.header-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-theme, .btn-icon {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
   justify-content: center;
+  font-size: 16px;
 }
 
-/* Contenedor principal que limita el ancho tipo pantalla de teléfono */
-.app-container {
-  max-width: 400px;
-  width: 100%;
-}
-
-/* Tarjeta de Voz con degradado suave (Azul/Morado sutil) */
+/* 4. Tarjeta de Voz (Limpieza) */
 .voice-card {
-  background: linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
-  border-radius: 24px;
-  padding: 30px;
+  padding: 20px;
   text-align: center;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-  margin-bottom: 20px;
+  background-color: #fcfdfe;
 }
 
 .voice-card h3 {
-  color: #333;
+  color: #555;
   margin-top: 0;
-  margin-bottom: 20px;
-  font-size: 20px;
+  margin-bottom: 15px;
+  font-size: 16px;
 }
 
-/* Botón del Micrófono Circular */
+/* Botón del Micrófono (Brillo azul suave) */
 .mic-button {
   background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
   border: none;
   border-radius: 50%;
-  width: 80px;
-  height: 80px;
+  width: 70px;
+  height: 70px;
   color: white;
   cursor: pointer;
-  box-shadow: 0 8px 15px rgba(0, 180, 219, 0.3);
-  transition: transform 0.2s, box-shadow 0.3s;
+  box-shadow: 0 6px 12px rgba(0, 180, 219, 0.2);
+  transition: all 0.3s ease;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Efecto al presionar el botón en la pantalla */
-.mic-button:active {
-  transform: scale(0.95);
-}
+.mic-button:active { transform: scale(0.95); }
+.mic-button .material-icons { font-size: 32px; }
 
-/* Tamaño del icono del micrófono */
-.mic-button .material-icons {
-  font-size: 36px;
-}
-
-/* Texto de estado inferior */
 .status-text {
-  color: #666;
-  font-size: 14px;
-  margin-top: 15px;
+  color: #888;
+  font-size: 12px;
+  margin-top: 10px;
   font-style: italic;
 }
 
-/* Rejilla para acomodar las tarjetas de acceso rápido en dos columnas */
+/* 5. Accesos Rápidos (Alineación) */
 .quick-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 15px;
+  padding: 0 20px;
+  margin-bottom: 15px;
 }
 
-/* Tarjetas blancas flotantes */
 .action-card {
   background: white;
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 12px;
+  padding: 15px;
   text-align: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
-  transition: transform 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+  border: 1px solid #eee;
+  cursor: pointer;
 }
 
-.action-card:active {
-  transform: scale(0.98);
-}
-
-/* Iconos de las tarjetas de acceso rápido */
 .action-card .material-icons {
-  font-size: 32px;
+  font-size: 28px;
   color: #0083b0;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 .action-card p {
   margin: 0;
-  color: #444;
-  font-size: 14px;
+  color: #666;
+  font-size: 12px;
   font-weight: 500;
 }
+
+/* 6. Formulario y Botones Originales (Rediseño Completo) */
+#task-form {
+  padding: 20px;
+  background-color: #fcfdfe;
+  margin-bottom: 15px;
+}
+
+#task-form input, #task-form select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  box-sizing: border-radius;
+}
+
+#task-form button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* 7. Estadísticas y Buscador (Limpieza) */
+.stats-panel {
+  padding: 15px 20px;
+  background-color: white;
+  margin-bottom: 15px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.stat {
+  background-color: #fcfdfe;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #eee;
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0083b0;
+  display: block;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #888;
+}
+
+/* Buscador Moderno */
+.search-container {
+  display: flex;
+  gap: 10px;
+  padding: 0 20px;
+  margin-bottom: 20px;
+}
+
+.search-container input, .search-container select {
+  flex: 1;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-size: 12px;
+}
+
+/* 8. Tareas y Lista (Limpieza) */
+h2 {
+  font-size: 16px;
+  color: #444;
+  padding: 0 20px;
+  margin-bottom: 10px;
+}
+
+#task-list {
+  list-style: none;
+  padding: 0 20px;
+  margin: 0;
+}
+
+#task-list li {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  border: 1px solid #eee;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Utilidades */
+.hidden { display: none !important; }
+.btn-danger { background-color: #ff4757; color: white; border: none; padding: 10px; border-radius: 8px; width: 100%; cursor: pointer; }
