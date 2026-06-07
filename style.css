@@ -1,456 +1,103 @@
-* {
-  box-sizing: border-box;
-}
+/* --- ESTILOS MODERNOS PARA MI ASISTENTE --- */
 
+/* Asegura que los márgenes sean limpios en el celular */
 body {
+  background-color: #f0f4f8;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   margin: 0;
   padding: 20px;
   display: flex;
   justify-content: center;
-  min-height: 100vh;
-  transition: background 0.3s ease;
 }
 
-/* Tema oscuro */
-html[data-theme="dark"] body {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
-
+/* Contenedor principal que limita el ancho tipo pantalla de teléfono */
 .app-container {
-  background-color: white;
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  max-width: 400px;
   width: 100%;
-  max-width: 550px;
-  transition: background-color 0.3s ease;
 }
 
-html[data-theme="dark"] .app-container {
-  background-color: #2d2d44;
-  color: #e0e0e0;
-}
-
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+/* Tarjeta de Voz con degradado suave (Azul/Morado sutil) */
+.voice-card {
+  background: linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
+  border-radius: 24px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.05);
   margin-bottom: 20px;
 }
 
-.header-controls {
-  display: flex;
-  gap: 10px;
-}
-
-h1 {
+.voice-card h3 {
   color: #333;
-  font-size: 28px;
-  margin: 0;
-}
-
-html[data-theme="dark"] h1 {
-  color: #e0e0e0;
-}
-
-h2 {
-  color: #666;
-  font-size: 18px;
-  margin-top: 30px;
-  margin-bottom: 15px;
-}
-
-html[data-theme="dark"] h2 {
-  color: #b0b0b0;
-}
-
-.btn-theme, .btn-icon {
-  background: none;
-  border: 2px solid #667eea;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  margin-top: 0;
+  margin-bottom: 20px;
   font-size: 20px;
+}
+
+/* Botón del Micrófono Circular */
+.mic-button {
+  background: linear-gradient(135deg, #00b4db 0%, #0083b0 100%);
+  border: none;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  color: white;
   cursor: pointer;
-  transition: all 0.3s;
-  display: flex;
+  box-shadow: 0 8px 15px rgba(0, 180, 219, 0.3);
+  transition: transform 0.2s, box-shadow 0.3s;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
-.btn-theme:hover, .btn-icon:hover {
-  background-color: #667eea;
-  transform: scale(1.1);
+/* Efecto al presionar el botón en la pantalla */
+.mic-button:active {
+  transform: scale(0.95);
 }
 
-/* Panel de Estadísticas */
-.stats-panel {
-  background: #f5f7fa;
-  padding: 20px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  border: 2px solid #667eea;
-  position: relative;
+/* Tamaño del icono del micrófono */
+.mic-button .material-icons {
+  font-size: 36px;
 }
 
-html[data-theme="dark"] .stats-panel {
-  background: #1f1f35;
-  border-color: #764ba2;
-}
-
-.stats-panel.hidden {
-  display: none;
-}
-
-.stats-panel h3 {
-  margin-top: 0;
-  color: #667eea;
-}
-
-html[data-theme="dark"] .stats-panel h3 {
-  color: #a78bfa;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 15px;
-  margin-bottom: 15px;
-}
-
-.stat {
-  background: white;
-  padding: 15px;
-  border-radius: 8px;
-  text-align: center;
-}
-
-html[data-theme="dark"] .stat {
-  background: #2d2d44;
-  border: 1px solid #444;
-}
-
-.stat-value {
-  display: block;
-  font-size: 28px;
-  font-weight: bold;
-  color: #667eea;
-  margin-bottom: 5px;
-}
-
-.stat-label {
-  display: block;
-  font-size: 12px;
-  color: #999;
-}
-
-html[data-theme="dark"] .stat-label {
-  color: #aaa;
-}
-
-.btn-export, .btn-close {
-  padding: 10px 15px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: all 0.3s;
-  width: 48%;
-}
-
-.btn-export {
-  background: #28a745;
-  color: white;
-}
-
-.btn-export:hover {
-  background: #218838;
-}
-
-.btn-close {
-  background: #dc3545;
-  color: white;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: auto;
-  padding: 5px 10px;
-}
-
-.btn-close:hover {
-  background: #c82333;
-}
-
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 25px;
-}
-
-input, select {
-  padding: 12px;
-  border-radius: 8px;
-  border: 2px solid #e0e0e0;
-  font-size: 16px;
-  transition: border-color 0.3s;
-  background-color: white;
-  color: #333;
-}
-
-html[data-theme="dark"] input,
-html[data-theme="dark"] select {
-  background-color: #3d3d54;
-  color: #e0e0e0;
-  border-color: #555;
-}
-
-input:focus, select:focus {
-  outline: none;
-  border-color: #667eea;
-}
-
-button {
-  padding: 12px;
-  border-radius: 8px;
-  border: none;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-form button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-}
-
-form button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-}
-
-/* Buscador */
-.search-container {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.search-container input {
-  flex: 1;
-}
-
-.search-container select {
-  width: 40%;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.task-item {
-  background: #f9f9f9;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-left: 5px solid #6c757d;
-  transition: all 0.3s;
-}
-
-html[data-theme="dark"] .task-item {
-  background: #3d3d54;
-  border-left-color: #666;
-}
-
-.task-item:hover {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transform: translateX(5px);
-}
-
-.task-item.factura { border-left-color: #dc3545; }
-.task-item.llamada { border-left-color: #28a745; }
-.task-item.tramite { border-left-color: #ffc107; }
-
-.task-item.completed .task-info .title {
-  text-decoration: line-through;
-  color: #999;
-}
-
-.task-info {
-  flex: 1;
-}
-
-.task-info p {
-  margin: 0;
-}
-
-.task-info .title {
-  font-weight: bold;
-  font-size: 18px;
-  color: #333;
-  margin-bottom: 5px;
-}
-
-html[data-theme="dark"] .task-info .title {
-  color: #e0e0e0;
-}
-
-.task-info .date {
-  font-size: 12px;
-  color: #999;
-}
-
-html[data-theme="dark"] .task-info .date {
-  color: #aaa;
-}
-
-.task-info .days-left {
-  font-size: 11px;
-  color: #667eea;
-  font-weight: 600;
-  margin-top: 4px;
-}
-
-.days-left.urgency-medium {
-  color: #ffc107;
-}
-
-.days-left.urgency-high {
-  color: #dc3545;
-}
-
-.days-left.urgency-critical {
-  color: #dc3545;
-  font-weight: bold;
-}
-
-.task-buttons {
-  display: flex;
-  gap: 8px;
-  margin-left: 10px;
-}
-
-.btn-complete, .btn-delete {
-  padding: 8px 12px;
-  font-size: 14px;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.btn-complete {
-  background-color: #28a745;
-  color: white;
-}
-
-.btn-complete:hover {
-  background-color: #218838;
-  transform: scale(1.05);
-}
-
-.btn-delete {
-  background-color: #dc3545;
-  color: white;
-  padding: 8px 10px;
-}
-
-.btn-delete:hover {
-  background-color: #c82333;
-}
-
-label {
+/* Texto de estado inferior */
+.status-text {
   color: #666;
-  font-weight: 600;
   font-size: 14px;
+  margin-top: 15px;
+  font-style: italic;
 }
 
-html[data-theme="dark"] label {
-  color: #b0b0b0;
+/* Rejilla para acomodar las tarjetas de acceso rápido en dos columnas */
+.quick-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
 }
 
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-  width: 100%;
-  margin-top: 20px;
+/* Tarjetas blancas flotantes */
+.action-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+  transition: transform 0.2s;
 }
 
-.btn-danger:hover {
-  background-color: #c82333;
+.action-card:active {
+  transform: scale(0.98);
 }
 
-.btn-danger.hidden {
-  display: none;
+/* Iconos de las tarjetas de acceso rápido */
+.action-card .material-icons {
+  font-size: 32px;
+  color: #0083b0;
+  margin-bottom: 8px;
 }
 
-/* Notificaciones */
-.notification {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: #28a745;
-  color: white;
-  padding: 15px 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.3s ease;
-  z-index: 1000;
-}
-
-.notification.show {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-/* Responsive */
-@media (max-width: 480px) {
-  .app-container {
-    padding: 15px;
-  }
-  
-  h1 {
-    font-size: 22px;
-  }
-  
-  .task-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .task-buttons {
-    margin-left: 0;
-    margin-top: 10px;
-    width: 100%;
-  }
-  
-  .btn-complete, .btn-delete {
-    flex: 1;
-  }
-  
-  .search-container {
-    flex-direction: column;
-  }
-  
-  .search-container select {
-    width: 100%;
-  }
-  
-  .stats-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .btn-export, .btn-close {
-    width: 45%;
-  }
+.action-card p {
+  margin: 0;
+  color: #444;
+  font-size: 14px;
+  font-weight: 500;
 }
