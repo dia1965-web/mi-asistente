@@ -2,17 +2,25 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Mi Asistente Personal</title>
-  <link rel="stylesheet" href=href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body>
 
   <div class="app-container">
     
+    <div class="header">
+      <h1>📋 Mi Asistente Personal</h1>
+      <div class="header-controls">
+        <button id="theme-toggle" class="btn-theme" title="Cambiar tema">🌙</button>
+        <button id="stats-btn" class="btn-icon" title="Ver estadísticas">📊</button>
+      </div>
+    </div>
+    
     <div class="voice-card">
       <h3>Control por Voz</h3>
-      <button id="btn-voz" class="mic-button">
+      <button id="btn-voz" class="mic-button" type="button">
         <span class="material-icons">mic</span>
       </button>
       <p id="texto-escuchado" class="status-text">Toca el micrófono y habla...</p>
@@ -29,20 +37,8 @@
       </div>
     </div>
 
-  </div>
+    <hr style="border: 0; height: 1px; background: #ddd; margin: 25px 0;">
 
-  <script src="script.js"></script>
-</body>
-  <div class="app-container">
-    <div class="header">
-      <h1>📋 Mi Asistente Personal</h1>
-      <div class="header-controls">
-        <button id="theme-toggle" class="btn-theme" title="Cambiar tema">🌙</button>
-        <button id="stats-btn" class="btn-icon" title="Ver estadísticas">📊</button>
-      </div>
-    </div>
-    
-    <!-- Panel de Estadísticas -->
     <div id="stats-panel" class="stats-panel hidden">
       <h3>📈 Estadísticas</h3>
       <div class="stats-grid">
@@ -67,7 +63,6 @@
       <button id="close-stats" class="btn-close">✕</button>
     </div>
     
-    <!-- Formulario para nueva tarea -->
     <form id="task-form">
       <input type="text" id="task-title" placeholder="¿Qué tienes que hacer?" required>
       
@@ -83,7 +78,6 @@
       <button type="submit">Agregar Tarea</button>
     </form>
 
-    <!-- Buscador -->
     <div class="search-container">
       <input type="text" id="search-input" placeholder="🔍 Buscar tareas...">
       <select id="filter-type">
@@ -94,11 +88,9 @@
       </select>
     </div>
 
-    <!-- Lista de tareas -->
     <h2>Mis Tareas Pendientes</h2>
     <ul id="task-list">
-      <!-- Aquí el código JavaScript meterá las tareas -->
-    </ul>
+      </ul>
     
     <button id="clear-all-btn" class="btn-danger hidden">🗑️ Limpiar todo</button>
   </div>
