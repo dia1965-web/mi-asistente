@@ -4,9 +4,35 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mi Asistente Personal</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href=href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body>
+
+  <div class="app-container">
+    
+    <div class="voice-card">
+      <h3>Control por Voz</h3>
+      <button id="btn-voz" class="mic-button">
+        <span class="material-icons">mic</span>
+      </button>
+      <p id="texto-escuchado" class="status-text">Toca el micrófono y habla...</p>
+    </div>
+
+    <div class="quick-actions">
+      <div class="action-card">
+        <span class="material-icons">phone</span>
+        <p>Llamar Contactos</p>
+      </div>
+      <div class="action-card">
+        <span class="material-icons">receipt_long</span>
+        <p>Pagar Facturas</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
   <div class="app-container">
     <div class="header">
       <h1>📋 Mi Asistente Personal</h1>
