@@ -504,8 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-                          // ... Todo el código anterior de la alarma está aquí arriba ...
-
+                       
   if (tiempoEspera > 0) {
     setTimeout(() => {
       if ('speechSynthesis' in window) {
@@ -516,11 +515,8 @@ document.addEventListener('DOMContentLoaded', () => {
       alert(`⏰ Alerta de Asistente: "${nombreTarea}" vence en 30 minutos.`);
     }, tiempoEspera);
   }
-} // <--- ESTA ES LA ÚLTIMA LLAVE QUE YA TIENES
+} // 
 
-// =======================================================
-// PEGA EL NUEVO BLOQUE JUSTO AQUÍ ABAJO:
-// =======================================================
 document.addEventListener('DOMContentLoaded', () => {
   const btnPagar = document.getElementById('tarjeta-pagar');
   const btnLlamar = document.getElementById('tarjeta-llamar');
