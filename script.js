@@ -33,7 +33,7 @@ clearAllBtn.addEventListener('click', clearAllTasks);
 
 // Función para agregar tarea
 function addTask(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
 
   const newTask = {
     id: Date.now(),
@@ -202,10 +202,15 @@ function updateStats() {
     return taskDate < today;
   }).length;
 
-  document.getElementById('total-tasks').textContent = totalTasks;
-  document.getElementById('completed-tasks').textContent = completedTasks;
-  document.getElementById('pending-tasks').textContent = pendingTasks;
-  document.getElementById('overdue-tasks').textContent = overdueTasks;
+  const eTotal = document.getElementById('total-tasks');
+  const eCompleted = document.getElementById('completed-tasks');
+  const ePending = document.getElementById('pending-tasks');
+  const eOverdue = document.getElementById('overdue-tasks');
+
+  if (eTotal) eTotal.textContent = totalTasks;
+  if (eCompleted) eCompleted.textContent = completedTasks;
+  if (ePending) ePending.textContent = pendingTasks;
+  if (eOverdue) eOverdue.textContent = overdueTasks;
 }
 
 // Función para exportar a CSV
@@ -325,71 +330,76 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
-// 1. Validar que el teléfono/navegador soporte el reconocimiento de voz
+
+// =======================================================
+// RECONOCIMIENTO DE VOZ INTEGRADO
+// =======================================================
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
 if (SpeechRecognition) {
   const recognition = new SpeechRecognition();
   
-  // Configuración del reconocimiento
-  recognition.lang = 'es-ES'; // Idioma español
-  recognition.continuous = false; // Se detiene automáticamente cuando dejas de hablar
-  recognition.interimResults = false; // Solo muestra el resultado final procesado
+  recognition.lang = 'es-ES';
+  recognition.continuous = false;
+  recognition.interimResults = false;
 
-  // Obtenemos los elementos del HTML que modificamos antes
   const botonVoz = document.getElementById('btn-voz');
   const textoEscuchado = document.getElementById('texto-escuchado');
 
-  // 2. Evento al tocar el botón del micrófono
-  botonVoz.addEventListener('click', () => {
-    try {
-      recognition.start();
-      textoEscuchado.innerText = "Escuchando... habla ahora.";
-      // Le damos un efecto visual de brillo verde mientras escucha
-      botonVoz.style.boxShadow = "0 0 25px rgba(46, 204, 113, 0.8)";
-      botonVoz.style.background = "linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)";
-    } catch (error) {
-      console.log("El reconocimiento ya estaba activo.");
-    }
-  });
+  if (botonVoz) {
+    botonVoz.addEventListener('click', () => {
+      try {
+        recognition.start();
+        if (textoEscuchado) textoEscuchado.innerText = "Escuchando... habla ahora.";
+        botonVoz.style.boxShadow = "0 0 25px rgba(46, 204, 113, 0.8)";
+        botonVoz.style.background = "linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)";
+      } catch (error) {
+        console.log("El reconocimiento ya estaba activo.");
+      }
+    });
+  }
 
-  // 3. Qué hace la app cuando dejas de hablar y entiende el texto
   recognition.onresult = (event) => {
-    // Convertimos lo que dijiste a minúsculas para que sea fácil de leer por el código
     const comando = event.results[0][0].transcript.toLowerCase();
-    textoEscuchado.innerText = `Entendido: "${comando}"`;
-    
-    // Devolvemos el botón a su color azul original
+    if (textoEscuchado) textoEscuchado.innerText = `Entendido: "${comando}"`;
     restaurarBoton(botonVoz);
-
-    // Enviamos el texto a nuestro "cerebro" de comandos
     procesarComando(comando);
   };
+
+  recognition.onerror = () => {
+    if (textoEscuchado) textoEscuchado.innerText = "No logré escucharte bien. ¡Intenta de nuevo!";
+    restaurarBoton(botonVoz);
+  };
+
+  recognition.onend = () => {
+    restaurarBoton(botonVoz);
+  };
+}
+
+function restaurarBoton(boton) {
+  if (boton) {
+    boton.style.boxShadow = "0 8px 18px rgba(0, 180, 219, 0.35)";
+    boton.style.background = "linear-gradient(135deg, #00b4db 0%, #0083b0 100%)";
+  }
+}
+
 // =======================================================
-// =======================================================
-// NUEVO CEREBRO DEL ASISTENTE: PROCESAR ÓRDENES POR VOZ (CORREGIDO)
+// CEREBRO DE COMANDOS DE VOZ Y DIÁLOGO LOGRADO
 // =======================================================
 function procesarComando(orden) {
   
-  // 1. FUNCIÓN INTERNA PARA QUE EL ASISTENTE HABLE
   function asistenteHabla(texto) {
     if ('speechSynthesis' in window) {
-      // Forzar que detenga cualquier mensaje anterior antes de hablar
       window.speechSynthesis.cancel();
-      
       const mensajeVoz = new SpeechSynthesisUtterance(texto);
-      mensajeVoz.lang = 'es-ES'; // Voz en español
-      mensajeVoz.volume = 1;     // Volumen al máximo
-      mensajeVoz.rate = 1;       // Velocidad normal
+      mensajeVoz.lang = 'es-ES';
+      mensajeVoz.volume = 1;
+      mensajeVoz.rate = 1;
       window.speechSynthesis.speak(mensajeVoz);
-    } else {
-      console.log("Tu navegador no soporta salida de voz.");
     }
   }
 
-  // 2. DETECTAR SI ES UNA TAREA / RECORDATORIO
   if (orden.includes("recordar") || orden.includes("tarea") || orden.includes("trámite") || orden.includes("pagar")) {
-    
     const textoTarea = orden.replace("recordar", "").replace("tarea", "").trim();
     
     if (textoTarea === "") {
@@ -397,7 +407,6 @@ function procesarComando(orden) {
       return;
     }
 
-    // Rellenamos el formulario viejo automáticamente con lo que dijiste
     const campoTitulo = document.getElementById('task-title');
     if (campoTitulo) campoTitulo.value = textoTarea.toUpperCase();
     
@@ -412,49 +421,35 @@ function procesarComando(orden) {
       }
     }
 
-    // Ponemos la fecha de hoy por defecto
     const hoy = new Date().toISOString().split('T')[0];
     const campoFecha = document.getElementById('task-date');
     if (campoFecha) campoFecha.value = hoy;
 
-    // Guardamos la tarea ejecutando tu formulario original automáticamente
-    const formulario = document.getElementById('task-form');
-    if (formulario) {
-      formulario.requestSubmit(); 
-    }
+    // Llamamos directamente a la función existente addTask pasándole un evento nulo falso
+    addTask(null);
 
-    // El asistente te responde hablando en voz alta
     asistenteHabla(`Tarea guardada con éxito: ${textoTarea}. Te avisaré media hora antes del vencimiento.`);
-
-    // Programamos la alerta interna de 30 minutos
     programarAvisoMediaHoraAntes(textoTarea);
   } 
-  
-  // DETECTAR LLAMADAS
   else if (orden.includes("llamar a")) {
     const contacto = orden.replace("llamar a", "").trim();
     asistenteHabla(`Marcando a ${contacto}`);
     setTimeout(() => {
       window.location.href = `tel:${contacto}`;
-    }, 1500); // Espera un segundo y medio para que termine de hablar antes de llamar
+    }, 1500);
   } 
-  
   else {
     asistenteHabla("Registré tu orden, pero aún no sé cómo ejecutar esa acción.");
   }
 }
 
-// =======================================================
-// SISTEMA DE ALERTAS (30 MINUTOS ANTES)
-// =======================================================
 function programarAvisoMediaHoraAntes(nombreTarea) {
   const ahora = new Date();
   const horaVencimiento = new Date();
   
-  // Ponemos hora de vencimiento por defecto a las 6:00 PM de hoy
+  // Vencimiento simulado a las 18:00 hs de hoy
   horaVencimiento.setHours(18, 0, 0); 
 
-  // Restamos 30 minutos al vencimiento
   const tiempoAlerta = horaVencimiento.getTime() - (30 * 60 * 1000); 
   const tiempoEspera = tiempoAlerta - ahora.getTime();
 
