@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2.0.0';
+const CACHE_VERSION = 'v3.0.0';
 const CACHE_NAME = `mi-asistente-${CACHE_VERSION}`;
 
 // Archivos a cachear
