@@ -464,3 +464,42 @@ function programarAvisoMediaHoraAntes(nombreTarea) {
     }, tiempoEspera);
   }
 }
+// =======================================================
+// ACTIVAR TARJETAS DE ACCESO RÁPIDO (FILTROS AL TOCAR)
+// =======================================================
+document.addEventListener('DOMContentLoaded', () => {
+  // Buscamos las tarjetas en la pantalla (asumiendo que tienen estos IDs o clases)
+  // Nota: Para asegurar que funcione, puedes buscar en tu HTML si las tarjetas tienen ID o definirlos aquí
+  const tarjetas = document.querySelectorAll('.action-card');
+  const selectorFiltro = document.getElementById('filter-type');
+
+  tarjetas.forEach(tarjeta => {
+    tarjeta.addEventListener('click', () => {
+      const textoTarjeta = tarjeta.innerText.toLowerCase();
+      
+      // Si la tarjeta que tocaste habla de "pagar" o "factura"
+      if (textoTarjeta.includes('pagar') || textoTarjeta.includes('factura')) {
+        if (selectorFiltro) {
+          // Si ya estaba filtrado por factura, limpiamos el filtro. Si no, lo activamos.
+          selectorFiltro.value = selectorFiltro.value === 'factura' ? '' : 'factura';
+        }
+      } 
+      // Si la tarjeta habla de "llamar" o "contacto"
+      else if (textoTarjeta.includes('llamar') || textoTarjeta.includes('contacto')) {
+        if (selectorFiltro) {
+          selectorFiltro.value = selectorFiltro.value === 'llamada' ? '' : 'llamada';
+        }
+      }
+
+      // Le avisamos a tu función original de filtrar que haga la magia en la pantalla
+      if (typeof filterTasks === 'function') {
+        filterTasks();
+      }
+
+      // Efecto visual rápido de selección (opcional)
+      tarjetas.forEach(t => t.style.borderColor = '#edf2f7');
+      if (selectorFiltro && selectorFiltro.value !== '') {
+        tarjeta.style.borderColor = '#0083b0';
+      }
+    });
+  });
