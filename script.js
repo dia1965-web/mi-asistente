@@ -14,42 +14,73 @@ const clearAllBtn = document.getElementById('clear-all-btn');
 let allTasks = [];
 let filteredTasks = [];
 
-// Cargar tareas guardadas al abrir la app
+// UN SOLO ARRANQUE PARA TODA LA APP
 document.addEventListener('DOMContentLoaded', () => {
   loadTheme();
   displayTasks();
   updateStats();
+  
+  // ACTIVAR TARJETAS DE ACCESO RÁPIDO (INTEGRADO AQUÍ)
+  const btnPagar = document.getElementById('tarjeta-pagar');
+  const btnLlamar = document.getElementById('tarjeta-llamar');
+
+  if (btnPagar) {
+    btnPagar.addEventListener('click', () => {
+      if (filterType) {
+        filterType.value = filterType.value === 'factura' ? '' : 'factura';
+        filterTasks(); 
+        btnPagar.style.borderColor = filterType.value === 'factura' ? '#0083b0' : '#edf2f7';
+        if (btnLlamar) btnLlamar.style.borderColor = '#edf2f7'; 
+      }
+    });
+  }
+
+  if (btnLlamar) {
+    btnLlamar.addEventListener('click', () => {
+      if (filterType) {
+        filterType.value = filterType.value === 'llamada' ? '' : 'llamada';
+        filterTasks(); 
+        btnLlamar.style.borderColor = filterType.value === 'llamada' ? '#0083b0' : '#edf2f7';
+        if (btnPagar) btnPagar.style.borderColor = '#edf2f7'; 
+      }
+    });
+  }
 });
 
-// Eventos
-form.addEventListener('submit', addTask);
-searchInput.addEventListener('input', filterTasks);
-filterType.addEventListener('change', filterTasks);
-themeToggle.addEventListener('click', toggleTheme);
-statsBtn.addEventListener('click', () => statsPanel.classList.remove('hidden'));
-closeStats.addEventListener('click', () => statsPanel.classList.add('hidden'));
-exportBtn.addEventListener('click', exportToCSV);
-clearAllBtn.addEventListener('click', clearAllTasks);
+// Eventos generales
+if (form) form.addEventListener('submit', addTask);
+if (searchInput) searchInput.addEventListener('input', filterTasks);
+if (filterType) filterType.addEventListener('change', filterTasks);
+if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+if (statsBtn) statsBtn.addEventListener('click', () => statsPanel.classList.remove('hidden'));
+if (closeStats) closeStats.addEventListener('click', () => statsPanel.classList.add('hidden'));
+if (exportBtn) exportBtn.addEventListener('click', exportToCSV);
+if (clearAllBtn) clearAllBtn.addEventListener('click', clearAllTasks);
 
 // Función para agregar tarea
 function addTask(e) {
   if (e) e.preventDefault();
 
+  const titleEl = document.getElementById('task-title');
+  const typeEl = document.getElementById('task-type');
+  const dateEl = document.getElementById('task-date');
+
+  if (!titleEl || !titleEl.value.trim()) return;
+
   const newTask = {
     id: Date.now(),
-    title: document.getElementById('task-title').value,
-    type: document.getElementById('task-type').value,
-    date: document.getElementById('task-date').value,
+    title: titleEl.value,
+    type: typeEl ? typeEl.value : 'tramite',
+    date: dateEl ? dateEl.value : new Date().toISOString().split('T')[0],
     completed: false,
     createdAt: new Date().toISOString()
   };
 
   saveTask(newTask);
   displayTasks();
-  form.reset();
+  if (form) form.reset();
   updateStats();
   
-  // Notificación visual
   showNotification('✅ Tarea agregada correctamente!');
 }
 
@@ -62,18 +93,18 @@ function saveTask(task) {
 
 // Función para mostrar las tareas en pantalla
 function displayTasks() {
+  if (!taskList) return;
   taskList.innerHTML = '';
   allTasks = JSON.parse(localStorage.getItem('myTasks')) || [];
 
   if (allTasks.length === 0) {
     taskList.innerHTML = '<li style="text-align: center; color: #999; padding: 20px;">✨ ¡No tienes tareas! ✨</li>';
-    clearAllBtn.classList.add('hidden');
+    if (clearAllBtn) clearAllBtn.classList.add('hidden');
     return;
   }
 
-  clearAllBtn.classList.remove('hidden');
+  if (clearAllBtn) clearAllBtn.classList.remove('hidden');
 
-  // Ordenar tareas: las facturas primero por importancia, luego por fecha
   let displayTasks = [...allTasks].sort((a, b) => {
     if (a.type !== b.type) {
       return a.type === 'factura' ? -1 : 1;
@@ -82,8 +113,6 @@ function displayTasks() {
   });
 
   displayTasks.forEach(task => renderTask(task));
-  
-  // Notificar tareas que vencen hoy
   checkOverdueNotifications();
 }
 
@@ -131,6 +160,7 @@ function renderTask(task) {
 
 // Función para filtrar tareas
 function filterTasks() {
+  if (!searchInput || !filterType || !taskList) return;
   const searchTerm = searchInput.value.toLowerCase();
   const typeFilter = filterType.value;
 
@@ -216,12 +246,10 @@ function updateStats() {
 // Función para exportar a CSV
 function exportToCSV() {
   let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
-  
   if (tasks.length === 0) {
     alert('No hay tareas para exportar');
     return;
   }
-
   const headers = ['Título', 'Tipo', 'Fecha de Vencimiento', 'Estado', 'Creada el'];
   const rows = tasks.map(task => [
     task.title,
@@ -230,101 +258,82 @@ function exportToCSV() {
     task.completed ? 'Completada' : 'Pendiente',
     new Date(task.createdAt).toLocaleDateString('es-ES')
   ]);
-
   let csv = headers.join(',') + '\n';
-  rows.forEach(row => {
-    csv += row.map(cell => `"${cell}"`).join(',') + '\n';
-  });
-
+  rows.forEach(row => { csv += row.map(cell => `"${cell}"`).join(',') + '\n'; });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
   link.download = `tareas_${new Date().toISOString().split('T')[0]}.csv`;
   link.click();
-  
   showNotification('📥 Tareas exportadas correctamente');
 }
 
-// Función para cambiar tema
+// Temas (Modo Oscuro)
 function toggleTheme() {
   const html = document.documentElement;
   const isDark = html.getAttribute('data-theme') === 'dark';
-  
   if (isDark) {
     html.removeAttribute('data-theme');
     localStorage.setItem('theme', 'light');
-    themeToggle.textContent = '🌙';
+    if (themeToggle) themeToggle.textContent = '🌙';
   } else {
     html.setAttribute('data-theme', 'dark');
     localStorage.setItem('theme', 'dark');
-    themeToggle.textContent = '☀️';
+    if (themeToggle) themeToggle.textContent = '☀️';
   }
 }
 
-// Función para cargar tema guardado
 function loadTheme() {
   const savedTheme = localStorage.getItem('theme') || 'light';
   const html = document.documentElement;
-  
   if (savedTheme === 'dark') {
     html.setAttribute('data-theme', 'dark');
-    themeToggle.textContent = '☀️';
+    if (themeToggle) themeToggle.textContent = '☀️';
   } else {
     html.removeAttribute('data-theme');
-    themeToggle.textContent = '🌙';
+    if (themeToggle) themeToggle.textContent = '🌙';
   }
 }
 
-// Función para mostrar notificaciones
+// Notificaciones visuales
 function showNotification(message) {
   const notification = document.createElement('div');
   notification.className = 'notification';
   notification.textContent = message;
   document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    notification.classList.add('show');
-  }, 10);
-  
+  setTimeout(() => { notification.classList.add('show'); }, 10);
   setTimeout(() => {
     notification.classList.remove('show');
     setTimeout(() => notification.remove(), 300);
   }, 3000);
 }
 
-// Función para verificar tareas vencidas
 function checkOverdueNotifications() {
   let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
   const today = new Date().toISOString().split('T')[0];
-  
   const tasksVencidoHoy = tasks.filter(t => t.date === today && !t.completed);
-  
   if (tasksVencidoHoy.length > 0) {
     playNotificationSound();
     showNotification(`⏰ ¡${tasksVencidoHoy.length} tarea(s) vence(n) hoy!`);
   }
 }
 
-// Función para reproducir sonido de notificación
 function playNotificationSound() {
-  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-  const oscillator = audioContext.createOscillator();
-  const gainNode = audioContext.createGain();
-  
-  oscillator.connect(gainNode);
-  gainNode.connect(audioContext.destination);
-  
-  oscillator.frequency.value = 800;
-  oscillator.type = 'sine';
-  
-  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
-  
-  oscillator.start(audioContext.currentTime);
-  oscillator.stop(audioContext.currentTime + 0.5);
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.5);
+  } catch (e) { console.log("Sonido bloqueado por el navegador hasta interacción."); }
 }
 
-// Función para escapar HTML
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
@@ -338,7 +347,6 @@ const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecogni
 
 if (SpeechRecognition) {
   const recognition = new SpeechRecognition();
-  
   recognition.lang = 'es-ES';
   recognition.continuous = false;
   recognition.interimResults = false;
@@ -353,9 +361,7 @@ if (SpeechRecognition) {
         if (textoEscuchado) textoEscuchado.innerText = "Escuchando... habla ahora.";
         botonVoz.style.boxShadow = "0 0 25px rgba(46, 204, 113, 0.8)";
         botonVoz.style.background = "linear-gradient(135deg, #2ecc71 0%, #27ae60 100%)";
-      } catch (error) {
-        console.log("El reconocimiento ya estaba activo.");
-      }
+      } catch (error) { console.log("Reconocimiento ya activo."); }
     });
   }
 
@@ -367,13 +373,11 @@ if (SpeechRecognition) {
   };
 
   recognition.onerror = () => {
-    if (textoEscuchado) textoEscuchado.innerText = "No logré escucharte bien. ¡Intenta de nuevo!";
+    if (textoEscuchado) textoEscuchado.innerText = "Intenta hablar de nuevo.";
     restaurarBoton(botonVoz);
   };
 
-  recognition.onend = () => {
-    restaurarBoton(botonVoz);
-  };
+  recognition.onend = () => { restaurarBoton(botonVoz); };
 }
 
 function restaurarBoton(boton) {
@@ -384,26 +388,23 @@ function restaurarBoton(boton) {
 }
 
 // =======================================================
-// CEREBRO DE COMANDOS DE VOZ Y DIÁLOGO LOGRADO
+// CEREBRO DE COMANDOS POR VOZ
 // =======================================================
 function procesarComando(orden) {
-  
   function asistenteHabla(texto) {
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       const mensajeVoz = new SpeechSynthesisUtterance(texto);
       mensajeVoz.lang = 'es-ES';
-      mensajeVoz.volume = 1;
-      mensajeVoz.rate = 1;
       window.speechSynthesis.speak(mensajeVoz);
     }
   }
 
   if (orden.includes("recordar") || orden.includes("tarea") || orden.includes("trámite") || orden.includes("pagar")) {
-    const textoTarea = orden.replace("recordar", "").replace("tarea", "").trim();
+    const textoTarea = orden.replace("recordar", "").replace("tarea", "").replace("trámite", "").replace("pagar", "").trim();
     
     if (textoTarea === "") {
-      asistenteHabla("Por favor, dime qué tarea deseas que guarde.");
+      asistenteHabla("¿Qué tarea deseas que guarde?");
       return;
     }
 
@@ -412,20 +413,14 @@ function procesarComando(orden) {
     
     const selectorTipo = document.getElementById('task-type');
     if (selectorTipo) {
-      if (orden.includes("llamar")) {
-        selectorTipo.value = "llamada";
-      } else if (orden.includes("pagar") || orden.includes("factura")) {
-        selectorTipo.value = "factura";
-      } else {
-        selectorTipo.value = "tramite";
-      }
+      if (orden.includes("llamar")) selectorTipo.value = "llamada";
+      else if (orden.includes("pagar") || orden.includes("factura")) selectorTipo.value = "factura";
+      else selectorTipo.value = "tramite";
     }
 
-    const hoy = new Date().toISOString().split('T')[0];
     const campoFecha = document.getElementById('task-date');
-    if (campoFecha) campoFecha.value = hoy;
+    if (campoFecha) campoFecha.value = new Date().toISOString().split('T')[0];
 
-    // Llamamos directamente a la función existente addTask pasándole un evento nulo falso
     addTask(null);
 
     asistenteHabla(`Tarea guardada con éxito: ${textoTarea}. Te avisaré media hora antes del vencimiento.`);
@@ -434,9 +429,7 @@ function procesarComando(orden) {
   else if (orden.includes("llamar a")) {
     const contacto = orden.replace("llamar a", "").trim();
     asistenteHabla(`Marcando a ${contacto}`);
-    setTimeout(() => {
-      window.location.href = `tel:${contacto}`;
-    }, 1500);
+    setTimeout(() => { window.location.href = `tel:${contacto}`; }, 1500);
   } 
   else {
     asistenteHabla("Registré tu orden, pero aún no sé cómo ejecutar esa acción.");
@@ -446,8 +439,6 @@ function procesarComando(orden) {
 function programarAvisoMediaHoraAntes(nombreTarea) {
   const ahora = new Date();
   const horaVencimiento = new Date();
-  
-  // Vencimiento simulado a las 18:00 hs de hoy
   horaVencimiento.setHours(18, 0, 0); 
 
   const tiempoAlerta = horaVencimiento.getTime() - (30 * 60 * 1000); 
@@ -464,83 +455,3 @@ function programarAvisoMediaHoraAntes(nombreTarea) {
     }, tiempoEspera);
   }
 }
-// =======================================================
-// ACTIVAR TARJETAS DE ACCESO RÁPIDO (FILTROS AL TOCAR)
-// =======================================================
-document.addEventListener('DOMContentLoaded', () => {
-  // Buscamos las tarjetas en la pantalla (asumiendo que tienen estos IDs o clases)
-  // Nota: Para asegurar que funcione, puedes buscar en tu HTML si las tarjetas tienen ID o definirlos aquí
-  const tarjetas = document.querySelectorAll('.action-card');
-  const selectorFiltro = document.getElementById('filter-type');
-
-  tarjetas.forEach(tarjeta => {
-    tarjeta.addEventListener('click', () => {
-      const textoTarjeta = tarjeta.innerText.toLowerCase();
-      
-      // Si la tarjeta que tocaste habla de "pagar" o "factura"
-      if (textoTarjeta.includes('pagar') || textoTarjeta.includes('factura')) {
-        if (selectorFiltro) {
-          // Si ya estaba filtrado por factura, limpiamos el filtro. Si no, lo activamos.
-          selectorFiltro.value = selectorFiltro.value === 'factura' ? '' : 'factura';
-        }
-      } 
-      // Si la tarjeta habla de "llamar" o "contacto"
-      else if (textoTarjeta.includes('llamar') || textoTarjeta.includes('contacto')) {
-        if (selectorFiltro) {
-          selectorFiltro.value = selectorFiltro.value === 'llamada' ? '' : 'llamada';
-        }
-      }
-
-      // Le avisamos a tu función original de filtrar que haga la magia en la pantalla
-      if (typeof filterTasks === 'function') {
-        filterTasks();
-      }
-
-      // Efecto visual rápido de selección (opcional)
-      tarjetas.forEach(t => t.style.borderColor = '#edf2f7');
-      if (selectorFiltro && selectorFiltro.value !== '') {
-        tarjeta.style.borderColor = '#0083b0';
-      }
-    });
-  });
-
-                       
-  if (tiempoEspera > 0) {
-    setTimeout(() => {
-      if ('speechSynthesis' in window) {
-        const aviso = new SpeechSynthesisUtterance(`Atención. Tu tarea: ${nombreTarea}, vencerá en treinta minutos.`);
-        aviso.lang = 'es-ES';
-        window.speechSynthesis.speak(aviso);
-      }
-      alert(`⏰ Alerta de Asistente: "${nombreTarea}" vence en 30 minutos.`);
-    }, tiempoEspera);
-  }
-} // 
-
-document.addEventListener('DOMContentLoaded', () => {
-  const btnPagar = document.getElementById('tarjeta-pagar');
-  const btnLlamar = document.getElementById('tarjeta-llamar');
-  const selectorFiltro = document.getElementById('filter-type');
-
-  if (btnPagar) {
-    btnPagar.addEventListener('click', () => {
-      if (selectorFiltro) {
-        selectorFiltro.value = selectorFiltro.value === 'factura' ? '' : 'factura';
-        filterTasks(); 
-        btnPagar.style.borderColor = selectorFiltro.value === 'factura' ? '#0083b0' : '#edf2f7';
-        if (btnLlamar) btnLlamar.style.borderColor = '#edf2f7'; 
-      }
-    });
-  }
-
-  if (btnLlamar) {
-    btnLlamar.addEventListener('click', () => {
-      if (selectorFiltro) {
-        selectorFiltro.value = selectorFiltro.value === 'llamada' ? '' : 'llamada';
-        filterTasks(); 
-        btnLlamar.style.borderColor = selectorFiltro.value === 'llamada' ? '#0083b0' : '#edf2f7';
-        if (btnPagar) btnPagar.style.borderColor = '#edf2f7'; 
-      }
-    });
-  }
-});
