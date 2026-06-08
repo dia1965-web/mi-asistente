@@ -503,3 +503,48 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
+                          // ... Todo el código anterior de la alarma está aquí arriba ...
+
+  if (tiempoEspera > 0) {
+    setTimeout(() => {
+      if ('speechSynthesis' in window) {
+        const aviso = new SpeechSynthesisUtterance(`Atención. Tu tarea: ${nombreTarea}, vencerá en treinta minutos.`);
+        aviso.lang = 'es-ES';
+        window.speechSynthesis.speak(aviso);
+      }
+      alert(`⏰ Alerta de Asistente: "${nombreTarea}" vence en 30 minutos.`);
+    }, tiempoEspera);
+  }
+} // <--- ESTA ES LA ÚLTIMA LLAVE QUE YA TIENES
+
+// =======================================================
+// PEGA EL NUEVO BLOQUE JUSTO AQUÍ ABAJO:
+// =======================================================
+document.addEventListener('DOMContentLoaded', () => {
+  const btnPagar = document.getElementById('tarjeta-pagar');
+  const btnLlamar = document.getElementById('tarjeta-llamar');
+  const selectorFiltro = document.getElementById('filter-type');
+
+  if (btnPagar) {
+    btnPagar.addEventListener('click', () => {
+      if (selectorFiltro) {
+        selectorFiltro.value = selectorFiltro.value === 'factura' ? '' : 'factura';
+        filterTasks(); 
+        btnPagar.style.borderColor = selectorFiltro.value === 'factura' ? '#0083b0' : '#edf2f7';
+        if (btnLlamar) btnLlamar.style.borderColor = '#edf2f7'; 
+      }
+    });
+  }
+
+  if (btnLlamar) {
+    btnLlamar.addEventListener('click', () => {
+      if (selectorFiltro) {
+        selectorFiltro.value = selectorFiltro.value === 'llamada' ? '' : 'llamada';
+        filterTasks(); 
+        btnLlamar.style.borderColor = selectorFiltro.value === 'llamada' ? '#0083b0' : '#edf2f7';
+        if (btnPagar) btnPagar.style.borderColor = '#edf2f7'; 
+      }
+    });
+  }
+});
