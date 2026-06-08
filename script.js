@@ -366,17 +366,25 @@ if (SpeechRecognition) {
     procesarComando(comando);
   };
 // =======================================================
-// NUEVO CEREBRO DEL ASISTENTE: PROCESAR ÓRDENES POR VOZ
+// =======================================================
+// NUEVO CEREBRO DEL ASISTENTE: PROCESAR ÓRDENES POR VOZ (CORREGIDO)
 // =======================================================
 function procesarComando(orden) {
   
-  // 1. FUNCIÓN PARA QUE EL ASISTENTE HABLE
+  // 1. FUNCIÓN INTERNA PARA QUE EL ASISTENTE HABLE
   function asistenteHabla(texto) {
-    const s语音 = new SpeechSynthesisUtterance(texto);
-    s语音.lang = 'es-ES'; // Voz en español
-    s语音.volume = 1;     // Volumen al máximo
-    s语音.rate = 1;       // Velocidad normal
-    window.speechSynthesis.speak(s语音);
+    if ('speechSynthesis' in window) {
+      // Forzar que detenga cualquier mensaje anterior antes de hablar
+      window.speechSynthesis.cancel();
+      
+      const mensajeVoz = new SpeechSynthesisUtterance(texto);
+      mensajeVoz.lang = 'es-ES'; // Voz en español
+      mensajeVoz.volume = 1;     // Volumen al máximo
+      mensajeVoz.rate = 1;       // Velocidad normal
+      window.speechSynthesis.speak(mensajeVoz);
+    } else {
+      console.log("Tu navegador no soporta salida de voz.");
+    }
   }
 
   // 2. DETECTAR SI ES UNA TAREA / RECORDATORIO
@@ -390,26 +398,32 @@ function procesarComando(orden) {
     }
 
     // Rellenamos el formulario viejo automáticamente con lo que dijiste
-    document.getElementById('task-title').value = textoTarea.toUpperCase();
+    const campoTitulo = document.getElementById('task-title');
+    if (campoTitulo) campoTitulo.value = textoTarea.toUpperCase();
     
     const selectorTipo = document.getElementById('task-type');
-    if (orden.includes("llamar")) {
-      selectorTipo.value = "llamada";
-    } else if (orden.includes("pagar") || orden.includes("factura")) {
-      selectorTipo.value = "factura";
-    } else {
-      selectorTipo.value = "tramite";
+    if (selectorTipo) {
+      if (orden.includes("llamar")) {
+        selectorTipo.value = "llamada";
+      } else if (orden.includes("pagar") || orden.includes("factura")) {
+        selectorTipo.value = "factura";
+      } else {
+        selectorTipo.value = "tramite";
+      }
     }
 
     // Ponemos la fecha de hoy por defecto
     const hoy = new Date().toISOString().split('T')[0];
-    document.getElementById('task-date').value = hoy;
+    const campoFecha = document.getElementById('task-date');
+    if (campoFecha) campoFecha.value = hoy;
 
     // Guardamos la tarea ejecutando tu formulario original automáticamente
     const formulario = document.getElementById('task-form');
-    formulario.requestSubmit(); 
+    if (formulario) {
+      formulario.requestSubmit(); 
+    }
 
-    // El asistente te responde hablando
+    // El asistente te responde hablando en voz alta
     asistenteHabla(`Tarea guardada con éxito: ${textoTarea}. Te avisaré media hora antes del vencimiento.`);
 
     // Programamos la alerta interna de 30 minutos
@@ -420,7 +434,9 @@ function procesarComando(orden) {
   else if (orden.includes("llamar a")) {
     const contacto = orden.replace("llamar a", "").trim();
     asistenteHabla(`Marcando a ${contacto}`);
-    window.location.href = `tel:${contacto}`;
+    setTimeout(() => {
+      window.location.href = `tel:${contacto}`;
+    }, 1500); // Espera un segundo y medio para que termine de hablar antes de llamar
   } 
   
   else {
@@ -444,11 +460,11 @@ function programarAvisoMediaHoraAntes(nombreTarea) {
 
   if (tiempoEspera > 0) {
     setTimeout(() => {
-      // El teléfono habla solo cuando se cumple el tiempo
-      const aviso = new SpeechSynthesisUtterance(`Atención. Tu tarea: ${nombreTarea}, vencerá en treinta minutos.`);
-      aviso.lang = 'es-ES';
-      window.speechSynthesis.speak(aviso);
-      
+      if ('speechSynthesis' in window) {
+        const aviso = new SpeechSynthesisUtterance(`Atención. Tu tarea: ${nombreTarea}, vencerá en treinta minutos.`);
+        aviso.lang = 'es-ES';
+        window.speechSynthesis.speak(aviso);
+      }
       alert(`⏰ Alerta de Asistente: "${nombreTarea}" vence en 30 minutos.`);
     }, tiempoEspera);
   }
