@@ -365,56 +365,91 @@ if (SpeechRecognition) {
     // Enviamos el texto a nuestro "cerebro" de comandos
     procesarComando(comando);
   };
-
-  // En caso de error o si no detecta voz
-  recognition.onerror = (event) => {
-    textoEscuchado.innerText = "No logré escucharte bien. ¡Intenta de nuevo!";
-    restaurarBoton(botonVoz);
-  };
-
-  recognition.onend = () => {
-    restaurarBoton(botonVoz);
-  };
-
-} else {
-  alert("Lo siento, este navegador o dispositivo no es compatible con el control por voz.");
-}
-
-// Función auxiliar para regresar el botón al diseño azul original
-function restaurarBoton(boton) {
-  boton.style.boxShadow = "0 8px 15px rgba(0, 180, 219, 0.3)";
-  boton.style.background = "linear-gradient(135deg, #00b4db 0%, #0083b0 100%)";
-}
-
-// 4. El "Cerebro" que decide qué hacer según tus palabras
+// =======================================================
+// NUEVO CEREBRO DEL ASISTENTE: PROCESAR ÓRDENES POR VOZ
+// =======================================================
 function procesarComando(orden) {
   
-  // COMANDO PARA LLAMAR
-  if (orden.includes("llamar a")) {
-    const contacto = orden.replace("llamar a", "").trim();
-    alert(`Asistente: Abriendo el marcador para llamar a "${contacto}"`);
+  // 1. FUNCIÓN PARA QUE EL ASISTENTE HABLE
+  function asistenteHabla(texto) {
+    const s语音 = new SpeechSynthesisUtterance(texto);
+    s语音.lang = 'es-ES'; // Voz en español
+    s语音.volume = 1;     // Volumen al máximo
+    s语音.rate = 1;       // Velocidad normal
+    window.speechSynthesis.speak(s语音);
+  }
+
+  // 2. DETECTAR SI ES UNA TAREA / RECORDATORIO
+  if (orden.includes("recordar") || orden.includes("tarea") || orden.includes("trámite") || orden.includes("pagar")) {
     
-    /* 
-      TIP: Si en el futuro tienes un número guardado, puedes hacer que marque directo usando:
-      window.location.href = "tel:+54911xxxxxxx";
-    */
+    const textoTarea = orden.replace("recordar", "").replace("tarea", "").trim();
+    
+    if (textoTarea === "") {
+      asistenteHabla("Por favor, dime qué tarea deseas que guarde.");
+      return;
+    }
+
+    // Rellenamos el formulario viejo automáticamente con lo que dijiste
+    document.getElementById('task-title').value = textoTarea.toUpperCase();
+    
+    const selectorTipo = document.getElementById('task-type');
+    if (orden.includes("llamar")) {
+      selectorTipo.value = "llamada";
+    } else if (orden.includes("pagar") || orden.includes("factura")) {
+      selectorTipo.value = "factura";
+    } else {
+      selectorTipo.value = "tramite";
+    }
+
+    // Ponemos la fecha de hoy por defecto
+    const hoy = new Date().toISOString().split('T')[0];
+    document.getElementById('task-date').value = hoy;
+
+    // Guardamos la tarea ejecutando tu formulario original automáticamente
+    const formulario = document.getElementById('task-form');
+    formulario.requestSubmit(); 
+
+    // El asistente te responde hablando
+    asistenteHabla(`Tarea guardada con éxito: ${textoTarea}. Te avisaré media hora antes del vencimiento.`);
+
+    // Programamos la alerta interna de 30 minutos
+    programarAvisoMediaHoraAntes(textoTarea);
   } 
   
-  // COMANDO PARA FACTURAS
-  else if (orden.includes("pagar") || orden.includes("factura") || orden.includes("recibo")) {
-    alert("Asistente: Abriendo tu lista de facturas y servicios pendientes.");
-    // Aquí puedes llamar a la función que ya tengas para mostrar tus cuentas
+  // DETECTAR LLAMADAS
+  else if (orden.includes("llamar a")) {
+    const contacto = orden.replace("llamar a", "").trim();
+    asistenteHabla(`Marcando a ${contacto}`);
+    window.location.href = `tel:${contacto}`;
   } 
   
-  // COMANDO PARA TRÁMITES O CREAR TAREAS GENERALES
-  else if (orden.includes("recordar") || orden.includes("tarea") || orden.includes("trámite")) {
-    const nuevaTarea = orden.replace("recordar", "").replace("tarea", "").trim();
-    alert(`Asistente: Añadiendo a tus trámites de oficina: "${nuevaTarea}"`);
-    // Aquí puedes conectar tu código antiguo que insertaba tareas en la lista
-  } 
-  
-  // SI NO ENTIENDE LA ORDEN
   else {
-    alert(`Asistente: Registré la orden "${orden}", pero aún no sé qué acción ejecutar para ella.`);
+    asistenteHabla("Registré tu orden, pero aún no sé cómo ejecutar esa acción.");
+  }
+}
+
+// =======================================================
+// SISTEMA DE ALERTAS (30 MINUTOS ANTES)
+// =======================================================
+function programarAvisoMediaHoraAntes(nombreTarea) {
+  const ahora = new Date();
+  const horaVencimiento = new Date();
+  
+  // Ponemos hora de vencimiento por defecto a las 6:00 PM de hoy
+  horaVencimiento.setHours(18, 0, 0); 
+
+  // Restamos 30 minutos al vencimiento
+  const tiempoAlerta = horaVencimiento.getTime() - (30 * 60 * 1000); 
+  const tiempoEspera = tiempoAlerta - ahora.getTime();
+
+  if (tiempoEspera > 0) {
+    setTimeout(() => {
+      // El teléfono habla solo cuando se cumple el tiempo
+      const aviso = new SpeechSynthesisUtterance(`Atención. Tu tarea: ${nombreTarea}, vencerá en treinta minutos.`);
+      aviso.lang = 'es-ES';
+      window.speechSynthesis.speak(aviso);
+      
+      alert(`⏰ Alerta de Asistente: "${nombreTarea}" vence en 30 minutos.`);
+    }, tiempoEspera);
   }
 }
