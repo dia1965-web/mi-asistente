@@ -14,12 +14,12 @@ body {
 /* 2. Contenedor Principal (Simula una App) */
 .app-container {
   max-width: 450px;
-  width: 90%;
-  margin: 20px auto;
+  width: 100%;
+  margin: 20px auto; /* Esto centra la app en pantallas grandes de PC */
   background-color: white;
   border-radius: 20px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-  overflow: hidden; /* Asegura bordes redondeados */
+  overflow: hidden; 
   padding-bottom: 20px;
 }
 
