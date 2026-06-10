@@ -80,8 +80,15 @@
         <option value="tramite">🏢 Trámite de Oficina</option>
       </select>
       
-      <label for="task-date">Vence el:</label>
-      <input type="date" id="task-date" required>
+      <div class="form-group">
+  <label for="task-date">Fecha de Vencimiento:</label>
+  <input type="date" id="task-date" required>
+</div>
+
+<div class="form-group">
+  <label for="task-time">Hora de Vencimiento:</label>
+  <input type="time" id="task-time" required>
+</div>
       
       <button type="submit">Agregar Tarea</button>
     </form>
