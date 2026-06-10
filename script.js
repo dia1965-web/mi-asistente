@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadTheme();
   displayTasks();
   updateStats();
-  reprogramarAlertasAlIniciar(); // Re-activa las alarmas de las tareas pendientes al abrir la app
+  reprogramarAlertasAlIniciar(); 
   
   // ACTIVAR TARJETAS DE ACCESO RÁPIDO
   const btnPagar = document.getElementById('tarjeta-pagar');
@@ -69,7 +69,6 @@ function addTask(e) {
 
   if (!titleEl || !titleEl.value.trim()) return;
 
-  // Calculamos la fecha local exacta sin duplicar variables
   const nuevaFecha = dateEl && dateEl.value ? dateEl.value : new Date().toLocaleDateString('sv-SE');
   const nuevaHora = timeEl && timeEl.value ? timeEl.value : "18:00";
 
@@ -90,17 +89,6 @@ function addTask(e) {
   
   showNotification('✅ Tarea agregada correctamente!');
   
-  programarAvisoMediaHoraAntes(newTask.title, nuevaFecha, nuevaHora);
-}
-
-  saveTask(newTask);
-  displayTasks();
-  if (form) form.reset();
-  updateStats();
-  
-  showNotification('✅ Tarea agregada correctamente!');
-  
-  // Programar el aviso basado en su fecha y hora reales
   programarAvisoMediaHoraAntes(newTask.title, nuevaFecha, nuevaHora);
 }
 
@@ -145,16 +133,14 @@ function renderTask(task) {
                   task.type === 'llamada' ? '📞 Llamada' : 
                   '🏢 Trámite';
 
-  const today = new Date();
-  const taskDate = new Date(task.date + 'T' + (task.time || '23:59'));
-  const daysLeft = Math.ceil((taskDate - today) / (1000 * 60 * 60 * 24));
+  const todayStr = new Date().toLocaleDateString('sv-SE');
   let daysInfo = '';
   let urgencyClass = '';
   
-  if (daysLeft < 0) {
-    daysInfo = `⚠️ Atrásado`;
+  if (task.date < todayStr) {
+    daysInfo = `⚠️ Atrasado`;
     urgencyClass = 'urgency-high';
-  } else if (daysLeft === 0) {
+  } else if (task.date === todayStr) {
     daysInfo = '🔴 ¡Hoy vence!';
     urgencyClass = 'urgency-critical';
   } else {
@@ -175,7 +161,6 @@ function renderTask(task) {
   taskList.appendChild(li);
 }
 
-// [Las demás funciones estándar se mantienen iguales para proteger la estabilidad]
 function filterTasks() {
   if (!searchInput || !filterType || !taskList) return;
   const searchTerm = searchInput.value.toLowerCase();
@@ -204,7 +189,6 @@ function toggleTask(id) {
   showNotification('✅ Estado actualizado!');
 }
 
-defineTask = deleteTask;
 function deleteTask(id) {
   if (confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
     let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
@@ -230,11 +214,10 @@ function updateStats() {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.completed).length;
   const pendingTasks = totalTasks - completedTasks;
-// Cambiamos el "new Date()" internacional por la fecha local exacta 'AAAA-MM-DD'
+  
   const todayStr = new Date().toLocaleDateString('sv-SE');
   const overdueTasks = tasks.filter(t => {
     if (t.completed) return false;
-    // Si la fecha de la tarea es menor a la de hoy, está atrasada
     return t.date < todayStr;
   }).length;
 
@@ -292,7 +275,7 @@ function showNotification(message) {
 
 function checkOverdueNotifications() {
   let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toLocaleDateString('sv-SE');
   const tasksVencidoHoy = tasks.filter(t => t.date === today && !t.completed);
   if (tasksVencidoHoy.length > 0) { showNotification(`⏰ ¡Tienes tareas que vencen hoy!`); }
 }
@@ -357,26 +340,20 @@ function procesarComando(orden) {
   }
 
   if (orden.includes("recordar") || orden.includes("tarea") || orden.includes("trámite") || orden.includes("pagar")) {
-    
-    // 1. EXTRAER EL TEXTO DE LA TAREA (Limpiando comandos)
     let textoTarea = orden.replace("recordar", "").replace("tarea", "").replace("trámite", "").replace("pagar", "").trim();
     
-    // Valores por defecto (Hoy a las 18:00)
-    let fechaDetectada = new Date().toISOString().split('T')[0];
+    let fechaDetectada = new Date().toLocaleDateString('sv-SE');
     let horaDetectada = "18:00";
 
-    // 2. DETECTOR DE HORAS POR VOZ (Ej: "a las 15 y 30", "a las 20:00")
     const regexHora = /a las\s+(\d{1,2})(?:\s+y\s+|\s*:\s*)?(\d{2})?/i;
     const matchHora = orden.match(regexHora);
     if (matchHora) {
       let hora = matchHora[1].padStart(2, '0');
       let minutos = matchHora[2] ? matchHora[2] : '00';
       horaDetectada = `${hora}:${minutos}`;
-      // Limpiamos la hora detectada del título de la tarea
       textoTarea = textoTarea.replace(matchHora[0], "").trim();
     }
 
-    // 3. DETECTOR DE FECHAS POR VOZ (Ej: "20 de junio", "5 de mayo")
     const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
     const regexFecha = /(\d{1,2})\s+de\s+([a-z]+)/i;
     const matchFecha = orden.match(regexFecha);
@@ -387,21 +364,18 @@ function procesarComando(orden) {
       const indiceMes = meses.indexOf(nombreMes);
       
       if (indiceMes !== -1) {
-        const anoActual = 2026; // El año actual del sistema
+        const anoActual = 2026; 
         const mes = String(indiceMes + 1).padStart(2, '0');
         fechaDetectada = `${anoActual}-${mes}-${dia}`;
-        // Limpiamos la fecha detectada del título de la tarea
         textoTarea = textoTarea.replace(matchFecha[0], "").trim();
       }
     }
 
-    // Si nos quedó vacío el texto
     if (textoTarea === "") {
       asistenteHabla("¿Qué tarea deseas que guarde?");
       return;
     }
 
-    // RELLENAR FORMULARIO AUTOMÁTICAMENTE
     const campoTitulo = document.getElementById('task-title');
     if (campoTitulo) campoTitulo.value = textoTarea.toUpperCase();
     
@@ -418,9 +392,7 @@ function procesarComando(orden) {
     const campoHora = document.getElementById('task-time');
     if (campoHora) campoHora.value = horaDetectada;
 
-    // Guardar ejecutando la función nativa
     addTask(null);
-
     asistenteHabla(`Guardado: ${textoTarea}. Alerta programada.`);
   } 
   else if (orden.includes("llamar a")) {
@@ -433,19 +405,12 @@ function procesarComando(orden) {
   }
 }
 
-// =======================================================
-// ALARMAS DINÁMICAS PRECISAS (30 MINUTOS ANTES)
-// =======================================================
 function programarAvisoMediaHoraAntes(nombreTarea, fecha, hora) {
   const ahora = new Date();
-  // Unimos la fecha y hora capturadas en un objeto de tiempo real
   const horaVencimiento = new Date(`${fecha}T${hora}`);
-
-  // Restamos 30 minutos exactos (30 min * 60 seg * 1000 milisegundos)
   const tiempoAlerta = horaVencimiento.getTime() - (30 * 60 * 1000); 
   const tiempoEspera = tiempoAlerta - ahora.getTime();
 
-  // Si todavía falta tiempo para esa alerta, se programa en el sistema
   if (tiempoEspera > 0) {
     setTimeout(() => {
       if ('speechSynthesis' in window) {
@@ -458,7 +423,6 @@ function programarAvisoMediaHoraAntes(nombreTarea, fecha, hora) {
   }
 }
 
-// Re-activa los cronómetros de las tareas que no se han completado cada vez que abres la app
 function reprogramarAlertasAlIniciar() {
   const tareas = JSON.parse(localStorage.getItem('myTasks')) || [];
   tareas.forEach(t => {
