@@ -332,7 +332,7 @@ function restaurarBoton(boton) {
 }
 
 // =======================================================
-// INTELIGENCIA ARTIFICIAL: PROCESADOR DE FRASES, FECHAS Y HORAS (ULTRA-ROBUSTO)
+// INTELIGENCIA ARTIFICIAL: PROCESADOR DE FRASES (VERSIÓN DIRECTA BLINDADA)
 // =======================================================
 function procesarComando(orden) {
   function asistenteHabla(texto) {
@@ -344,36 +344,46 @@ function procesarComando(orden) {
     }
   }
 
+  // Limpiar comandos iniciales
   let textoTarea = orden.replace("recordar", "").replace("tarea", "").replace("trámite", "").trim();
   
-  let fechaDetectada = new Date().toLocaleDateString('sv-SE');
-  let horaDetectada = "18:00"; // Hora por defecto si no se detecta ninguna
+  // Capturar elementos reales de la pantalla
+  const campoTitulo = document.getElementById('task-title');
+  const selectorTipo = document.getElementById('task-type');
+  const campoFecha = document.getElementById('task-date');
+  const campoHora = document.getElementById('task-time');
 
-  // EXTRACTOR DE HORA TODO-TERRENO (Soporta: "15:30", "15 y 30", "5 y 10", "09:00", etc.)
-  // Busca cualquier combinación de números después de "a las"
-  const regexHoraUniversal = /a las\s+(\d{1,2})(?:\s*[\s:y]\s*)(\d{2})?/i;
-  const matchHora = orden.match(regexHoraUniversal);
+  if (!campoTitulo) {
+    console.error("No se encontró el formulario en pantalla");
+    return;
+  }
+
+  // 1. ASIGNAR VALORES POR DEFECTO DIRECTO EN LA PANTALLA
+  campoFecha.value = new Date().toLocaleDateString('sv-SE');
+  campoHora.value = "18:00";
+
+  // 2. DETECTOR DE HORAS ULTRA FLEXIBLE
+  // Busca cualquier número de 1 o 2 dígitos, seguido de espacios, "y", o dos puntos, y luego otros 2 dígitos
+  const regexHora = /(?:a las\s+)?(\d{1,2})(?:\s*[:\s-y]\s*)(\d{2})/i;
+  const matchHora = orden.match(regexHora);
   
   if (matchHora) {
     let hora = matchHora[1].padStart(2, '0');
-    let minutos = matchHora[2] ? matchHora[2].padStart(2, '0') : '00';
-    horaDetectada = `${hora}:${minutos}`;
+    let minutos = matchHora[2].padStart(2, '0');
+    campoHora.value = `${hora}:${minutos}`;
     textoTarea = textoTarea.replace(matchHora[0], "").trim();
   } else {
-    // Intento secundario por si dijiste una hora exacta sin minutos (Ej: "a las 15 horas" o "a las 3")
-    const regexHoraSimple = /a las\s+(\d{1,2})/i;
+    // Intento secundario para horas en punto (Ej: "a las 15")
+    const regexHoraSimple = /(?:a las\s+)(\d{1,2})/i;
     const matchSimple = orden.match(regexHoraSimple);
     if (matchSimple) {
       let hora = matchSimple[1].padStart(2, '0');
-      horaDetectada = `${hora}:00`;
+      campoHora.value = `${hora}:00`;
       textoTarea = textoTarea.replace(matchSimple[0], "").trim();
     }
   }
 
-  // Limpiar palabras basura del final de la hora si se cuelan
-  textoTarea = textoTarea.replace(/horas?$/i, "").trim();
-
-  // DETECTOR DE FECHAS
+  // 3. DETECTOR DE FECHAS
   const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const regexFecha = /(\d{1,2})\s+de\s+([a-z]+)/i;
   const matchFecha = orden.match(regexFecha);
@@ -386,40 +396,40 @@ function procesarComando(orden) {
     if (indiceMes !== -1) {
       const anoActual = new Date().getFullYear(); 
       const mes = String(indiceMes + 1).padStart(2, '0');
-      fechaDetectada = `${anoActual}-${mes}-${dia}`;
+      campoFecha.value = `${anoActual}-${mes}-${dia}`;
       textoTarea = textoTarea.replace(matchFecha[0], "").trim();
     }
   }
+
+  // Limpieza de palabras sueltas al final
+  textoTarea = textoTarea.replace(/horas?$/i, "").trim();
 
   if (textoTarea === "") {
     asistenteHabla("¿Qué tarea deseas que guarde?");
     return;
   }
 
-  // RELLENAR CAMPOS E INYECTAR DATOS DIRECTOS
-  const campoTitulo = document.getElementById('task-title');
-  if (campoTitulo) campoTitulo.value = textoTarea.toUpperCase();
+  // 4. INYECTAR EL TÍTULO Y EL TIPO EN LA PANTALLA
+  campoTitulo.value = textoTarea.toUpperCase();
   
-  const selectorTipo = document.getElementById('task-type');
   if (selectorTipo) {
     if (orden.includes("llamar") || orden.includes("telefono")) selectorTipo.value = "llamada";
     else if (orden.includes("pagar") || orden.includes("factura") || orden.includes("agua") || orden.includes("luz")) selectorTipo.value = "factura";
     else selectorTipo.value = "tramite";
   }
 
-  const campoFecha = document.getElementById('task-date');
-  if (campoFecha) campoFecha.value = fechaDetectada;
-
-  const campoHora = document.getElementById('task-time');
-  if (campoHora) campoHora.value = horaDetectada;
-
-  // Ejecutamos pasando un evento falso seguro para que la PC no se congele
-  addTask({ preventDefault: () => {} });
-
-  // Limpieza preventiva del formulario visual después de guardar por voz
-  if (campoTitulo) campoTitulo.value = '';
-
-  asistenteHabla(`Guardado con éxito: ${textoTarea}.`);
+  // 5. EL TRUCO MAESTRO: Simulamos un submit real del formulario
+  // Esto obliga a la app a usar el flujo idéntico al botón "Agregar" de la PC
+  try {
+    addTask({ preventDefault: () => {} });
+    asistenteHabla(`Guardado con éxito: ${textoTarea}.`);
+    
+    // Limpiamos la pantalla después de procesar
+    campoTitulo.value = '';
+  } catch (error) {
+    console.error("Error al guardar:", error);
+    asistenteHabla("Hubo un error al intentar guardar la tarea.");
+  }
 }
 
 // =======================================================
