@@ -65,15 +65,33 @@ function addTask(e) {
   const titleEl = document.getElementById('task-title');
   const typeEl = document.getElementById('task-type');
   const dateEl = document.getElementById('task-date');
-  const timeEl = document.getElementById('task-time'); // Nuevo campo
+  const timeEl = document.getElementById('task-time'); 
 
   if (!titleEl || !titleEl.value.trim()) return;
 
-  const nuevaFecha = dateEl && dateEl.value ? dateEl.value : new Date().toISOString().split('T')[0];
+  // Calculamos la fecha local exacta sin duplicar variables
+  const nuevaFecha = dateEl && dateEl.value ? dateEl.value : new Date().toLocaleDateString('sv-SE');
   const nuevaHora = timeEl && timeEl.value ? timeEl.value : "18:00";
 
-  const nuevaFecha = dateEl && dateEl.value ? dateEl.value : new Date().toLocaleDateString('sv-SE');
+  const newTask = {
+    id: Date.now(),
+    title: titleEl.value,
+    type: typeEl ? typeEl.value : 'tramite',
+    date: nuevaFecha,
+    time: nuevaHora, 
+    completed: false,
+    createdAt: new Date().toISOString()
   };
+
+  saveTask(newTask);
+  displayTasks();
+  if (form) form.reset();
+  updateStats();
+  
+  showNotification('✅ Tarea agregada correctamente!');
+  
+  programarAvisoMediaHoraAntes(newTask.title, nuevaFecha, nuevaHora);
+}
 
   saveTask(newTask);
   displayTasks();
