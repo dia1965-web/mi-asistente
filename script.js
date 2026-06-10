@@ -327,7 +327,7 @@ function restaurarBoton(boton) {
 }
 
 // =======================================================
-// INTELIGENCIA ARTIFICIAL: PROCESADOR DE FRASES, FECHAS Y HORAS
+// INTELIGENCIA ARTIFICIAL: PROCESADOR DE FRASES, FECHAS Y HORAS (CORREGIDO)
 // =======================================================
 function procesarComando(orden) {
   function asistenteHabla(texto) {
@@ -339,62 +339,71 @@ function procesarComando(orden) {
     }
   }
 
-  if (orden.includes("recordar") || orden.includes("tarea") || orden.includes("trámite") || orden.includes("pagar")) {
-    let textoTarea = orden.replace("recordar", "").replace("tarea", "").replace("trámite", "").replace("pagar", "").trim();
+  // Ahora procesa CUALQUIER frase, no exige empezar con "recordar" obligatoriamente
+  let textoTarea = orden.replace("recordar", "").replace("tarea", "").replace("trámite", "").trim();
+  
+  // Valores por defecto iniciales
+  let fechaDetectada = new Date().toLocaleDateString('sv-SE');
+  let horaDetectada = "18:00";
+
+  // 1. DETECTOR DE HORAS MEJORADO (Soporta "15:30", "15 y 30", e ignora la palabra "horas")
+  const regexHora = /a las\s+(\d{1,2})(?:\s+y\s+|\s*:\s*)?(\d{2})?(\s*horas)?/i;
+  const matchHora = orden.match(regexHora);
+  if (matchHora) {
+    let hora = matchHora[1].padStart(2, '0');
+    let minutos = matchHora[2] ? matchHora[2] : '00';
+    horaDetectada = `${hora}:${minutos}`;
+    // Limpiamos todo el bloque de la hora del título de la tarea
+    textoTarea = textoTarea.replace(matchHora[0], "").trim();
+  }
+
+  // 2. DETECTOR DE FECHAS MEJORADO (Detecta "20 de junio", "5 de mayo", etc.)
+  const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+  const regexFecha = /(\d{1,2})\s+de\s+([a-z]+)/i;
+  const matchFecha = orden.match(regexFecha);
+  
+  if (matchFecha) {
+    const dia = matchFecha[1].padStart(2, '0');
+    const nombreMes = matchFecha[2].toLowerCase();
+    const indiceMes = meses.indexOf(nombreMes);
     
-    let fechaDetectada = new Date().toLocaleDateString('sv-SE');
-    let horaDetectada = "18:00";
-
-    const regexHora = /a las\s+(\d{1,2})(?:\s+y\s+|\s*:\s*)?(\d{2})?/i;
-    const matchHora = orden.match(regexHora);
-    if (matchHora) {
-      let hora = matchHora[1].padStart(2, '0');
-      let minutos = matchHora[2] ? matchHora[2] : '00';
-      horaDetectada = `${hora}:${minutos}`;
-      textoTarea = textoTarea.replace(matchHora[0], "").trim();
+    if (indiceMes !== -1) {
+      const anoActual = new Date().getFullYear(); // Usa dinámicamente el año en curso
+      const mes = String(indiceMes + 1).padStart(2, '0');
+      fechaDetectada = `${anoActual}-${mes}-${dia}`;
+      // Limpiamos la fecha del título de la tarea
+      textoTarea = textoTarea.replace(matchFecha[0], "").trim();
     }
+  }
 
-    const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-    const regexFecha = /(\d{1,2})\s+de\s+([a-z]+)/i;
-    const matchFecha = orden.match(regexFecha);
-    
-    if (matchFecha) {
-      const dia = matchFecha[1].padStart(2, '0');
-      const nombreMes = matchFecha[2].toLowerCase();
-      const indiceMes = meses.indexOf(nombreMes);
-      
-      if (indiceMes !== -1) {
-        const anoActual = 2026; 
-        const mes = String(indiceMes + 1).padStart(2, '0');
-        fechaDetectada = `${anoActual}-${mes}-${dia}`;
-        textoTarea = textoTarea.replace(matchFecha[0], "").trim();
-      }
-    }
+  // Si después de limpiar nos quedó vacía la frase
+  if (textoTarea === "") {
+    asistenteHabla("¿Qué tarea deseas que guarde?");
+    return;
+  }
 
-    if (textoTarea === "") {
-      asistenteHabla("¿Qué tarea deseas que guarde?");
-      return;
-    }
+  // RELLENAR FORMULARIO EN PANTALLA AUTOMÁTICAMENTE
+  const campoTitulo = document.getElementById('task-title');
+  if (campoTitulo) campoTitulo.value = textoTarea.toUpperCase();
+  
+  const selectorTipo = document.getElementById('task-type');
+  if (selectorTipo) {
+    if (orden.includes("llamar") || orden.includes("telefono")) selectorTipo.value = "llamada";
+    else if (orden.includes("pagar") || orden.includes("factura") || orden.includes("agua") || orden.includes("luz")) selectorTipo.value = "factura";
+    else selectorTipo.value = "tramite";
+  }
 
-    const campoTitulo = document.getElementById('task-title');
-    if (campoTitulo) campoTitulo.value = textoTarea.toUpperCase();
-    
-    const selectorTipo = document.getElementById('task-type');
-    if (selectorTipo) {
-      if (orden.includes("llamar")) selectorTipo.value = "llamada";
-      else if (orden.includes("pagar") || orden.includes("factura")) selectorTipo.value = "factura";
-      else selectorTipo.value = "tramite";
-    }
+  const campoFecha = document.getElementById('task-date');
+  if (campoFecha) campoFecha.value = fechaDetectada;
 
-    const campoFecha = document.getElementById('task-date');
-    if (campoFecha) campoFecha.value = fechaDetectada;
+  const campoHora = document.getElementById('task-time');
+  if (campoHora) campoHora.value = horaDetectada;
 
-    const campoHora = document.getElementById('task-time');
-    if (campoHora) campoHora.value = horaDetectada;
+  // Guardar ejecutando la función nativa de la app
+  addTask(null);
 
-    addTask(null);
-    asistenteHabla(`Guardado: ${textoTarea}. Alerta programada.`);
-  } 
+  asistenteHabla(`Guardado con éxito: ${textoTarea}.`);
+}
   else if (orden.includes("llamar a")) {
     const contacto = orden.replace("llamar a", "").trim();
     asistenteHabla(`Marcando a ${contacto}`);
