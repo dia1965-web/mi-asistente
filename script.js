@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
 if (form) form.addEventListener('submit', addTask);
 if (searchInput) searchInput.addEventListener('input', filterTasks);
 if (filterType) filterType.addEventListener('change', filterTasks);
+if (themeToggle) themeToggle.setAttribute('style', 'cursor: pointer;'); // fallback preventivo
 if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
 if (statsBtn) statsBtn.addEventListener('click', () => statsPanel.classList.remove('hidden'));
 if (closeStats) closeStats.addEventListener('click', () => statsPanel.classList.add('hidden'));
@@ -327,7 +328,7 @@ function restaurarBoton(boton) {
 }
 
 // =======================================================
-// INTELIGENCIA ARTIFICIAL: PROCESADOR DE FRASES, FECHAS Y HORAS (CORREGIDO)
+// INTELIGENCIA ARTIFICIAL: PROCESADOR DE FRASES, FECHAS Y HORAS (INTEGRADO)
 // =======================================================
 function procesarComando(orden) {
   function asistenteHabla(texto) {
@@ -339,25 +340,20 @@ function procesarComando(orden) {
     }
   }
 
-  // Ahora procesa CUALQUIER frase, no exige empezar con "recordar" obligatoriamente
   let textoTarea = orden.replace("recordar", "").replace("tarea", "").replace("trámite", "").trim();
   
-  // Valores por defecto iniciales
   let fechaDetectada = new Date().toLocaleDateString('sv-SE');
   let horaDetectada = "18:00";
 
-  // 1. DETECTOR DE HORAS MEJORADO (Soporta "15:30", "15 y 30", e ignora la palabra "horas")
   const regexHora = /a las\s+(\d{1,2})(?:\s+y\s+|\s*:\s*)?(\d{2})?(\s*horas)?/i;
   const matchHora = orden.match(regexHora);
   if (matchHora) {
     let hora = matchHora[1].padStart(2, '0');
     let minutos = matchHora[2] ? matchHora[2] : '00';
     horaDetectada = `${hora}:${minutos}`;
-    // Limpiamos todo el bloque de la hora del título de la tarea
     textoTarea = textoTarea.replace(matchHora[0], "").trim();
   }
 
-  // 2. DETECTOR DE FECHAS MEJORADO (Detecta "20 de junio", "5 de mayo", etc.)
   const meses = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
   const regexFecha = /(\d{1,2})\s+de\s+([a-z]+)/i;
   const matchFecha = orden.match(regexFecha);
@@ -368,21 +364,18 @@ function procesarComando(orden) {
     const indiceMes = meses.indexOf(nombreMes);
     
     if (indiceMes !== -1) {
-      const anoActual = new Date().getFullYear(); // Usa dinámicamente el año en curso
+      const anoActual = new Date().getFullYear(); 
       const mes = String(indiceMes + 1).padStart(2, '0');
       fechaDetectada = `${anoActual}-${mes}-${dia}`;
-      // Limpiamos la fecha del título de la tarea
       textoTarea = textoTarea.replace(matchFecha[0], "").trim();
     }
   }
 
-  // Si después de limpiar nos quedó vacía la frase
   if (textoTarea === "") {
     asistenteHabla("¿Qué tarea deseas que guarde?");
     return;
   }
 
-  // RELLENAR FORMULARIO EN PANTALLA AUTOMÁTICAMENTE
   const campoTitulo = document.getElementById('task-title');
   if (campoTitulo) campoTitulo.value = textoTarea.toUpperCase();
   
@@ -399,21 +392,13 @@ function procesarComando(orden) {
   const campoHora = document.getElementById('task-time');
   if (campoHora) campoHora.value = horaDetectada;
 
-  // Guardar ejecutando la función nativa de la app
   addTask(null);
-
   asistenteHabla(`Guardado con éxito: ${textoTarea}.`);
 }
-  else if (orden.includes("llamar a")) {
-    const contacto = orden.replace("llamar a", "").trim();
-    asistenteHabla(`Marcando a ${contacto}`);
-    setTimeout(() => { window.location.href = `tel:${contacto}`; }, 1500);
-  } 
-  else {
-    asistenteHabla("No sé cómo ejecutar esa acción.");
-  }
-}
 
+// =======================================================
+// ALARMAS DINÁMICAS PRECISAS (30 MINUTOS ANTES)
+// =======================================================
 function programarAvisoMediaHoraAntes(nombreTarea, fecha, hora) {
   const ahora = new Date();
   const horaVencimiento = new Date(`${fecha}T${hora}`);
