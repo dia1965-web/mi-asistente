@@ -72,14 +72,7 @@ function addTask(e) {
   const nuevaFecha = dateEl && dateEl.value ? dateEl.value : new Date().toISOString().split('T')[0];
   const nuevaHora = timeEl && timeEl.value ? timeEl.value : "18:00";
 
-  const newTask = {
-    id: Date.now(),
-    title: titleEl.value,
-    type: typeEl ? typeEl.value : 'tramite',
-    date: nuevaFecha,
-    time: nuevaHora, // Guardamos la hora exacta
-    completed: false,
-    createdAt: new Date().toISOString()
+  const nuevaFecha = dateEl && dateEl.value ? dateEl.value : new Date().toLocaleDateString('sv-SE');
   };
 
   saveTask(newTask);
@@ -219,10 +212,12 @@ function updateStats() {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.completed).length;
   const pendingTasks = totalTasks - completedTasks;
-  const today = new Date();
+// Cambiamos el "new Date()" internacional por la fecha local exacta 'AAAA-MM-DD'
+  const todayStr = new Date().toLocaleDateString('sv-SE');
   const overdueTasks = tasks.filter(t => {
     if (t.completed) return false;
-    return new Date(t.date) < today;
+    // Si la fecha de la tarea es menor a la de hoy, está atrasada
+    return t.date < todayStr;
   }).length;
 
   const eTotal = document.getElementById('total-tasks');
